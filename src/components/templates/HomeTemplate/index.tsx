@@ -6,6 +6,7 @@ import { useState } from "react";
 
 const HomeTemplate = () => {
   const [visibleBoardModal, setVisibleBoardModal] = useState(false);
+
   return (
     <>
       <div className="p-6 min-h-screen bg-gray-100 flex flex-col items-center">
