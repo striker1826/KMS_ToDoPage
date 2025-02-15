@@ -2,10 +2,13 @@ import { Board } from "@/constant/board";
 import { useState } from "react";
 
 export const useDragAndDrop = () => {
+  const [itemsList, setItemsList] = useState([]);
   const [draggedItem, setDraggedItem] = useState<string | null>(null);
   const [position, setPosition] = useState({ x: 0, y: 0 });
 
   const onDragStart = (e: React.DragEvent<HTMLDivElement>, id: string) => {
+    const currentItems = JSON.parse(localStorage.getItem("board") || "[]");
+    setItemsList(currentItems);
     e.dataTransfer.effectAllowed = "move";
     e.dataTransfer.setData("id", id);
   };
@@ -42,7 +45,11 @@ export const useDragAndDrop = () => {
 
   const onDragEnd = () => {
     setDraggedItem(null);
-    window.location.reload();
+    const updatedItemList = JSON.parse(localStorage.getItem("board") || "[]");
+
+    if (JSON.stringify(itemsList) !== JSON.stringify(updatedItemList)) {
+      window.location.reload();
+    }
   };
 
   return {
