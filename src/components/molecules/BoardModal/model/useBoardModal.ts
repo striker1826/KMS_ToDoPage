@@ -4,6 +4,7 @@ import {
   INITIAL_BOARD_DURATION,
   INITIAL_BOARD_PRIORITY,
 } from "@/constant/boardModal";
+import { Board } from "@/constant/board";
 
 const useBoardModal = (closeEvent: () => void) => {
   const [title, setTitle] = useState("");
@@ -61,22 +62,36 @@ const useBoardModal = (closeEvent: () => void) => {
 
   const submitBoard = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+
     if (!title || !duration.startDate || !duration.endDate || !priority) {
       alert("보드 정보를 모두 채워주세요!");
       return;
     }
+
+    const currentBoard = JSON.parse(localStorage.getItem("board") || "[]");
+    const isExistTitle = currentBoard?.some(
+      (board: Board) => board.title === title
+    );
+
+    if (isExistTitle) {
+      alert("이미 등록되어 있는 보드 제목입니다.");
+      return;
+    }
+
     handleSaveBoard();
   };
 
   const handleSaveBoard = () => {
     const existingBoards = JSON.parse(localStorage.getItem("board") || "[]");
 
-    const newBoard = { title, duration, priority };
+    const id = Math.random().toString(36).substr(2, 11);
+    const newBoard = { id, title, duration, priority };
     const updatedBoards = [...existingBoards, newBoard];
 
     localStorage.setItem("board", JSON.stringify(updatedBoards));
     resetBoardState();
     closeEvent();
+    window.location.reload();
   };
 
   const closeBoardModal = () => {
