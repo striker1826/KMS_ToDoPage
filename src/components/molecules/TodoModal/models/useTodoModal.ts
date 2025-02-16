@@ -4,9 +4,13 @@ import {
   INITIAL_BOARD_DURATION,
   INITIAL_BOARD_PRIORITY,
 } from "@/constant/boardModal";
+import { useParams } from "next/navigation";
 
-const useBoardModal = (closeEvent: () => void) => {
+const useTodoModal = (closeEvent: () => void) => {
+  const params = useParams();
+
   const [title, setTitle] = useState("");
+  const [description, setDescription] = useState(""); // 추가된 상태
   const [duration, setDuration] = useState(INITIAL_BOARD_DURATION);
   const [priority, setPriority] = useState(INITIAL_BOARD_PRIORITY);
 
@@ -62,24 +66,58 @@ const useBoardModal = (closeEvent: () => void) => {
   const submitBoard = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
 
-    if (!title || !duration.startDate || !duration.endDate || !priority) {
+    if (
+      !title ||
+      !description ||
+      !duration.startDate ||
+      !duration.endDate ||
+      !priority
+    ) {
       alert("보드 정보를 모두 채워주세요!");
       return;
     }
 
-    const currentBoard = JSON.parse(localStorage.getItem("board") || "[]");
+    const currentTodo = JSON.parse(localStorage.getItem("todo") || "[]");
+    const getTodos = currentTodo?.find(
+      (todo: Todo) => todo.boardId === params?.boardId
+    );
 
     handleSaveBoard();
   };
 
   const handleSaveBoard = () => {
-    const existingBoards = JSON.parse(localStorage.getItem("board") || "[]");
+    const existingBoards = JSON.parse(localStorage.getItem("todo") || "[]");
 
     const id = Math.random().toString(36).substr(2, 11);
-    const newBoard = { id, title, duration, priority };
-    const updatedBoards = [...existingBoards, newBoard];
+    const newTodo = {
+      id,
+      title,
+      description,
+      duration,
+      priority,
+    };
 
-    localStorage.setItem("board", JSON.stringify(updatedBoards));
+    const updatedBoards = existingBoards.some(
+      (board: any) => board.boardId === params?.boardId
+    )
+      ? existingBoards.map((board: any) => {
+          if (board.boardId === params?.boardId) {
+            return {
+              ...board,
+              items: [...board.items, newTodo],
+            };
+          }
+          return board;
+        })
+      : [
+          ...existingBoards,
+          {
+            boardId: params?.boardId,
+            items: [newTodo],
+          },
+        ];
+
+    localStorage.setItem("todo", JSON.stringify(updatedBoards));
     resetBoardState();
     closeEvent();
     window.location.reload();
@@ -92,15 +130,18 @@ const useBoardModal = (closeEvent: () => void) => {
 
   const resetBoardState = () => {
     setTitle("");
+    setDescription(""); // description 초기화
     setDuration(INITIAL_BOARD_DURATION);
     setPriority(INITIAL_BOARD_PRIORITY);
   };
 
   return {
     title,
+    description, // description 반환
     duration,
     priority,
     setTitle,
+    setDescription, // setDescription 반환
     onClickStartDate,
     onClickEndDate,
     setPriority,
@@ -109,4 +150,4 @@ const useBoardModal = (closeEvent: () => void) => {
   };
 };
 
-export default useBoardModal;
+export default useTodoModal;

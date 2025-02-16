@@ -1,14 +1,18 @@
 import { useState } from "react";
-import { Board } from "@/constant/board";
 import dayjs from "dayjs";
+import { useParams } from "next/navigation";
 
-const useBoardCard = (
+const useTodoCard = (
   title: string,
+  description: string,
   duration: { startDate: string; endDate: string },
   priority: string
 ) => {
+  const params = useParams();
+  const boardId = params?.boardId;
   const [isEditing, setIsEditing] = useState(false);
   const [updatedTitle, setUpdatedTitle] = useState(title);
+  const [updatedDescription, setUpdatedDescription] = useState(description);
   const [updatedDuration, setUpdatedDuration] = useState(duration);
   const [updatedPriority, setUpdatedPriority] = useState(priority);
 
@@ -62,10 +66,27 @@ const useBoardCard = (
   };
 
   const handleRemoveBoard = (id: string) => {
-    const currentBoard = JSON.parse(localStorage.getItem("board") || "[]");
-    const removedBoard = currentBoard.filter((board: Board) => board.id !== id);
+    const currentTodo = JSON.parse(localStorage.getItem("todo") || "[]");
 
-    localStorage.setItem("board", JSON.stringify(removedBoard));
+    const getTodoByBoardId = currentTodo.find(
+      (todo: Todo) => todo.boardId === boardId
+    );
+
+    const removedTodoItems = getTodoByBoardId.items.filter(
+      (item: Todo) => item.id !== id
+    );
+
+    const removedTodo = currentTodo.map((todo: Todo) => {
+      if (todo.boardId === boardId) {
+        return {
+          ...todo,
+          ["items"]: [...removedTodoItems],
+        };
+      }
+      return todo;
+    });
+
+    localStorage.setItem("todo", JSON.stringify(removedTodo));
     window.location.reload();
   };
 
@@ -80,37 +101,48 @@ const useBoardCard = (
       return;
     }
 
-    const currentBoard = JSON.parse(localStorage.getItem("board") || "[]");
-
     handleUpdateBoard(id);
   };
 
   const handleUpdateBoard = (id: string) => {
-    const currentBoard = JSON.parse(localStorage.getItem("board") || "[]");
-    const updatedBoard = currentBoard.map((board: Board) =>
-      board.id === id
+    const currentTodo: TodoBoard[] = JSON.parse(
+      localStorage.getItem("todo") || "[]"
+    );
+
+    const updatedBoards: TodoBoard[] = currentTodo.map((board) =>
+      board.boardId === boardId
         ? {
             ...board,
-            title: updatedTitle,
-            duration: {
-              startDate: updatedDuration.startDate,
-              endDate: updatedDuration.endDate,
-            },
-            priority: updatedPriority,
+            items: board.items.map((todo) =>
+              todo.id === id
+                ? {
+                    ...todo,
+                    title: updatedTitle,
+                    description: updatedDescription,
+                    duration: {
+                      startDate: updatedDuration.startDate,
+                      endDate: updatedDuration.endDate,
+                    },
+                    priority: updatedPriority,
+                  }
+                : todo
+            ),
           }
         : board
     );
 
-    localStorage.setItem("board", JSON.stringify(updatedBoard));
+    localStorage.setItem("todo", JSON.stringify(updatedBoards));
     location.reload();
   };
 
   return {
     isEditing,
     updatedTitle,
+    updatedDescription,
     updatedDuration,
     updatedPriority,
     setUpdatedTitle,
+    setUpdatedDescription,
     setUpdatedPriority,
     setIsEditing,
     onClickStartDate,
@@ -120,4 +152,4 @@ const useBoardCard = (
   };
 };
 
-export default useBoardCard;
+export default useTodoCard;

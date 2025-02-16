@@ -1,7 +1,7 @@
 "use client";
 
-import BlueBtn from "@/components/atoms/BlueBtn";
 import BoardModal from "@/components/molecules/BoardModal";
+import Header from "@/components/molecules/Header";
 import BoardList from "@/components/organisms/BoardList";
 import { Board } from "@/constant/board";
 import { useEffect, useState } from "react";
@@ -18,20 +18,15 @@ const HomeTemplate = () => {
 
   return (
     <>
-      <div className={`p-6 bg-gray-100 flex flex-col items-center`}>
-        <h1 className="text-3xl font-bold mb-4">Kanban To-Do List</h1>
-        <BlueBtn
-          onClick={() => setVisibleBoardModal(true)}
-          text="칸반보드 생성"
-        />
-      </div>
+      <Header
+        setVisibleBoardModal={setVisibleBoardModal}
+        title="보드"
+        isBack={false}
+        btnText="보드 생성"
+      />
 
       <div className="mt-6 w-full">
-        {boards.length === 0 ? (
-          <p className=" w-full text-center text-gray-600">보드가 없습니다.</p>
-        ) : (
-          <BoardList boards={boards} />
-        )}
+        {boards.length === 0 ? <div></div> : <BoardList boards={boards} />}
       </div>
 
       <BoardModal
